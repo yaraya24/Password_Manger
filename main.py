@@ -1,9 +1,8 @@
 from colorama import Fore, Back, Style
 from cryptography.fernet import Fernet
-import bcrypt, base64, re, string, random
+import bcrypt, base64, re, string, random, argparse, os, sys
 from pathlib import Path
 import click, csv
-import os 
 import hashlib
 
 from cryptography.hazmat.backends import default_backend
@@ -11,6 +10,9 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 def main():
+    parser = argparse.ArgumentParser(description='This is my help......')
+    args = parser.parse_args()
+    
     while True:
         print(Style.RESET_ALL) 
         print(Fore.YELLOW + '**** Cyber Vault Z ****'.center(100), Fore.WHITE)
@@ -113,7 +115,8 @@ def main():
                 else:
                     print(Fore.RED + "\nUsername or Password is incorrect", Fore.WHITE)
                     continue
-
+        elif user_instruction == 'exit':
+           sys.exit()
 
 def read_csv_to_list(username):
     csv_list = []
