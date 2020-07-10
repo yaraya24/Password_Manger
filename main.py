@@ -106,6 +106,8 @@ def main():
                                 print(Fore.RED + "You already have a service with that name", Fore.WHITE)
                         if user_instruction == 'display' or '2':
                             display_vault(user_name, master_password)
+                            service_name_to_reveal = input("\nEnter the name of the service to view the password - or enter 'return' to go back\n:").capitalize()
+                            decrypt_service_password(service_name_to_reveal, user_name, master_password)
                     break   
                 else:
                     print(Fore.RED + "\nUsername or Password is incorrect", Fore.WHITE)
@@ -124,8 +126,9 @@ def read_csv_to_list(username):
 
 def display_vault(username, masterpassword):
     vault_list = read_csv_to_list(username)
-    for count, row in enumerate(vault_list[1:], 1):
-        print(Fore.LIGHTCYAN_EX, f"{count}. {row[0]}:  **********")
+    print()
+    for count, row in enumerate(vault_list[2:], 1):
+        print(Fore.LIGHTCYAN_EX, f"{count}. {row[0]}:  **********", Fore.WHITE)
 
 
 def check_for_duplicate_service(username, name):
@@ -230,22 +233,25 @@ def add_service(master_password, username, name, specific_password):
         writer = csv.writer(f)
         writer.writerow([name, encoded_password.decode()])
 
-def decrypt_service_password(name, master_password):
+def decrypt_service_password(service_name, username, master_password):
    
     read_csv_list = read_csv_to_list(username)
-        
+    found_service = False   
     for row in read_csv_list:
-        if name in row:
-            name_pw = row[1]
+        if service_name in row:
+            encrypted_password = row[1]
+            found_service = True
     
     salt = read_csv_list[1][1].encode()
    
-        
-    print(name_pw)
-    kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=salt, iterations=100000, backend=default_backend())
-    encoding_key = base64.urlsafe_b64encode(kdf.derive(master_password.encode()))
-
-    print(Fernet(encoding_key).decrypt(name_pw.encode()).decode())
+    if found_service:  
+        kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=salt, iterations=100000, backend=default_backend())
+        encoding_key = base64.urlsafe_b64encode(kdf.derive(master_password.encode()))
+        decrypted_password = Fernet(encoding_key).decrypt(encrypted_password.encode()).decode()
+        print(Fore.YELLOW + f"{service_name}:" + Fore.BLACK + f"{decrypted_password}" , Fore.WHITE)
+        print("The password is hidden - you must highlight it with your cursor")
+    else:
+        print(Fore.RED + f"Could not find an entry with the name {service_name}", Fore.WHITE)
 
 
 if __name__ == '__main__':
