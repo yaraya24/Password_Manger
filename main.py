@@ -1,6 +1,6 @@
 from colorama import Fore, Back, Style
 from cryptography.fernet import Fernet
-import bcrypt, base64, re, string, random, argparse, os, sys
+import bcrypt, base64, re, string, random, os, sys
 from pathlib import Path
 import click, csv
 import hashlib
@@ -9,10 +9,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
-def main():
-    parser = argparse.ArgumentParser(description='This is my help......')
-    args = parser.parse_args()
-    
+def main():    
     while True:
         print(Style.RESET_ALL) 
         print(Fore.YELLOW + '**** Cyber Vault Z ****'.center(100), Fore.WHITE)
@@ -39,15 +36,11 @@ def main():
             while True:
                 user_name = click.prompt("Please enter a username - or type 'return' to go back to the previous page \n")
                 if Path('users/' + user_name + '.csv').exists():
-                    print ("That username is already taken - please choose another")
+                    print (Fore.RED + "That username is already taken - please choose another", Fore.WHITE)
                     continue
-                elif user_name == 'return':
+                elif user_name.lower() == 'return':
                     break
-                elif len(user_name) > 18:
-                    print("Sorry but that is too long of a username....try again")
-                    continue
-                elif len(user_name) < 5:
-                    print("Sorry but that username is too short...try again")
+                elif username_validator(user_name) == False:
                     continue
                 else:
                     while True:
@@ -68,10 +61,10 @@ def main():
                         master_password = click.prompt("Please enter a password \n", hide_input=True, confirmation_prompt=True)
                         if password_complexity_checker(master_password):
                             hashing_function(master_password, user_name)
-                            print(Fore.YELLOW + "\n Successfully Created an account", Fore.WHITE)
+                            print(Fore.GREEN + "\n Successfully Created an account", Fore.WHITE)
                             break
                         else:
-                            print(Fore.YELLOW + "\n You have entered an invalid password - please try again", Fore.WHITE)
+                            print(Fore.RED + "\n You have entered an invalid password - please try again", Fore.WHITE)
                             continue
                     
                     break
@@ -89,15 +82,15 @@ def main():
                         Welcome to your security Vault.....
 
                         1. Add
-                        2. Edit
-                        3. Display
+                        2. Display
+                        3. Edit
                         4. Logout
 
                         """)
                         user_instruction = input(":").lower()
                         if user_instruction == "add" or user_instruction == '1':
-                            service_name = input("Please enter the name of the service you wish to add to your vault - or enter 'return' to go back - \n:").capitalize()
-                            if service_name == 'return':
+                            service_name = input("Please enter the name of the service you wish to add to your vault - or enter 'return' to go back \n:").capitalize()
+                            if service_name == 'Return':
                                 continue
                             elif check_for_duplicate_service(user_name, service_name):
                                 confirmation = input(Fore.YELLOW + f"Enter 'yes' if you wish to add {service_name} to your vault - A password will be auto-generated for you\n:" + Fore.WHITE).lower()
@@ -106,11 +99,13 @@ def main():
                                     add_service(master_password, user_name, service_name, service_password)
                                     print(Fore.GREEN + f"{service_name} has been added to your vault", Fore.WHITE)
                                 else:
+                                    print(Fore.RED + f"{service_name} has NOT been added to your vault", Fore.WHITE)
                                     continue
 
                             else:
                                 print(Fore.RED + "You already have a service with that name", Fore.WHITE)
-
+                        if user_instruction == 'display' or '2':
+                            display_vault(user_name, master_password)
                     break   
                 else:
                     print(Fore.RED + "\nUsername or Password is incorrect", Fore.WHITE)
@@ -126,6 +121,12 @@ def read_csv_to_list(username):
             csv_list.append(row)
         
     return csv_list   
+
+def display_vault(username, masterpassword):
+    vault_list = read_csv_to_list(username)
+    for count, row in enumerate(vault_list[1:], 1):
+        print(Fore.LIGHTCYAN_EX, f"{count}. {row[0]}:  **********")
+
 
 def check_for_duplicate_service(username, name):
     csv_list = read_csv_to_list(username)
@@ -172,6 +173,23 @@ def verify_master_password(password_check, username):
     else:
         return False
 
+def username_validator(username):
+
+    username_regex = re.compile(r'^[a-zA-Z0-9_-]*$')
+    if username_regex.search(username) is None:
+         print(Fore.RED + "Sorry please only use letters, numbers, dashes and underscores", Fore.WHITE)
+         return False
+    elif len(username) > 20:
+        print(Fore.RED + "Sorry but your username is too long....try again", Fore.WHITE)
+        return False
+    elif len(username) < 5:
+        print(Fore.RED + "Sorry but your username is too short....try again", Fore.WHITE)
+        return False
+    else:
+        print(Fore.GREEN + "That username is availeble", Fore.WHITE)
+        return True
+
+
 
 def password_complexity_checker(password):
     
@@ -211,6 +229,23 @@ def add_service(master_password, username, name, specific_password):
     with open('users/' + username + '.csv', 'a', newline='') as f:
         writer = csv.writer(f)
         writer.writerow([name, encoded_password.decode()])
+
+def decrypt_service_password(name, master_password):
+   
+    read_csv_list = read_csv_to_list(username)
+        
+    for row in read_csv_list:
+        if name in row:
+            name_pw = row[1]
+    
+    salt = read_csv_list[1][1].encode()
+   
+        
+    print(name_pw)
+    kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=salt, iterations=100000, backend=default_backend())
+    encoding_key = base64.urlsafe_b64encode(kdf.derive(master_password.encode()))
+
+    print(Fernet(encoding_key).decrypt(name_pw.encode()).decode())
 
 
 if __name__ == '__main__':
