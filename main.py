@@ -27,10 +27,7 @@ def main():
         """)
 
         
-        # username = "salah"
-        # password_check = 'Respedct24$$'
-        # verify_master_password(password_check, username)
-        # break
+
         user_instruction = input(':')
                 
         if user_instruction == 'create' or user_instruction == '1':
@@ -103,7 +100,7 @@ def main():
 
 
     
-def
+
 
 def hashing_function(password, username):
     salt = base64.b64encode(os.urandom(32))
