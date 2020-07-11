@@ -107,6 +107,8 @@ def main():
                         if user_instruction == 'display' or '2':
                             display_vault(user_name, master_password)
                             service_name_to_reveal = input("\nEnter the name of the service to view the password - or enter 'return' to go back\n:").capitalize()
+                            if service_name_to_reveal == 'Return':
+                                continue
                             decrypt_service_password(service_name_to_reveal, user_name, master_password)
                     break   
                 else:
@@ -237,9 +239,10 @@ def decrypt_service_password(service_name, username, master_password):
    
     read_csv_list = read_csv_to_list(username)
     found_service = False   
-    for row in read_csv_list:
-        if service_name in row:
+    for count, row in enumerate(read_csv_list, -1): 
+        if service_name in row or service_name == str(count) and service_name != '0' and service_name != '-1':
             encrypted_password = row[1]
+            found_service_name = row[0]
             found_service = True
     
     salt = read_csv_list[1][1].encode()
@@ -248,10 +251,11 @@ def decrypt_service_password(service_name, username, master_password):
         kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=salt, iterations=100000, backend=default_backend())
         encoding_key = base64.urlsafe_b64encode(kdf.derive(master_password.encode()))
         decrypted_password = Fernet(encoding_key).decrypt(encrypted_password.encode()).decode()
-        print(Fore.YELLOW + f"{service_name}:" + Fore.BLACK + f"{decrypted_password}" , Fore.WHITE)
-        print("The password is hidden - you must highlight it with your cursor")
+        print(Fore.LIGHTCYAN_EX + f"{found_service_name}:")
+        print(Fore.LIGHTGREEN_EX + "->" + Fore.BLACK + f"{decrypted_password}" + Fore.LIGHTGREEN_EX + "<-")
+        print(Fore.YELLOW + "The password is hidden - you must highlight it with your cursor", Fore.WHITE)
     else:
-        print(Fore.RED + f"Could not find an entry with the name {service_name}", Fore.WHITE)
+        print(Fore.RED + f"Invalid option - could not find that service", Fore.WHITE)
 
 
 if __name__ == '__main__':
