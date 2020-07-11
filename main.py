@@ -105,26 +105,43 @@ def main():
                             else:
                                 print(Fore.RED + "You already have a service with that name", Fore.WHITE)
                         elif user_instruction == 'display' or user_instruction == '2':
-                            display_vault(user_name, master_password)
-                            service_name_to_reveal = input(Fore.YELLOW + "\nEnter the name of the service to view the password - or enter 'return' to go back\n:" + Fore.WHITE).capitalize()
-                            if service_name_to_reveal == 'Return':
-                                continue
-                            decrypt_service_password(service_name_to_reveal, user_name, master_password)
-                        elif user_instruction == 'update' or '3':
-                            display_vault(user_name, master_password)
-                            service_name_to_update = input(Fore.YELLOW + "\nEnter the name of the service to update the password - or enter 'return' to go back\n:" + Fore.WHITE).capitalize()
                             while True:
-                                print("\n***Options***\n1. Update Password\n2. Delete Entry\n")
-                                edit_user_option = input(":").lower()
-                                if edit_user_option == 'return':
+                                display_vault(user_name, master_password)
+                                service_name_to_reveal = input(Fore.YELLOW + "\nEnter the name of the service to view the password - or enter 'return' to go back\n:" + Fore.WHITE).capitalize()
+                                if service_name_to_reveal == 'Return':
                                     break
-                                elif edit_user_option == "update" or edit_user_option == "update password" or edit_user_option == "1":
-                                    confirmation = input(Fore.YELLOW + f"Enter 'yes' if you wish to add {service_name_to_update} to your vault - A password will be auto-generated for you\n:" + Fore.WHITE).lower()
-                                    if confirmation:
-                                        update_service_password(master_password, user_name, service_name_to_update)
-                                    else:
+                                elif check_service_exists(user_name, service_name_to_reveal):
+                                    decrypt_service_password(service_name_to_reveal, user_name, master_password)
+                                    break
+                                else:
+                                    print(Fore.RED + f"Sorry didn't understand the selection: {service_name_to_reveal}.", Fore.WHITE)
+                                    continue
+                        elif user_instruction == 'update' or '3':
+                            while True:
+                                display_vault(user_name, master_password)
+                                service_name_to_update = input(Fore.YELLOW + "\nEnter the name of the service to update the password - or enter 'return' to go back\n:" + Fore.WHITE).capitalize()
+                                if service_name_to_update == 'Return':
+                                    break
+                                elif check_service_exists(user_name, service_name_to_update):
+                                    print(Fore.YELLOW + f"\n***Options for {check_service_exists(user_name, service_name_to_update)}***\n" + Fore.WHITE + "1. Update Password\n2. Delete Entry\n")
+                                    edit_user_option = input(":").lower()
+                                    if edit_user_option == 'return':
                                         continue
-                                    "================================= WRITE HERE ======================="
+                                    elif edit_user_option == "update" or edit_user_option == "update password" or edit_user_option == "1":
+                                        confirmation_input = input(Fore.YELLOW + f"Confirm by entering 'yes' - A password will be auto-generated for you\n" + Fore.RED + "WARNING: THE CURRENT PASSWORD WILL BE REMOVED FOREVER \n" + Fore.WHITE + ":").lower()
+                                        if confirmation_input == 'yes' or confirmation_input == 'y':
+                                            update_service_password(master_password, user_name, service_name_to_update)
+                                            break
+                                        else:
+                                            print(Fore.RED + f"Confirmation Failed - Nothing was updated", Fore.WHITE)
+                                            continue
+                                    elif edit_user_option == "delete" or edit_user_option == "delete entry" or edit_user_option == "2":
+                                        "================================= WRITE HERE ======================="
+                                    else:
+                                        print(Fore.RED + f"Sorry didn't understand the selection: {edit_user_option}.", Fore.WHITE)
+                                else:
+                                    print(Fore.RED + f"Sorry didn't understand the selection: {service_name_to_update}.", Fore.WHITE)
+                                    continue
 
 
                     break #no idea what this break down
@@ -239,7 +256,7 @@ def password_generator():
          password += random.choice(total_possible_selection)
     return password
 
-def add_service(master_password, username, name, specific_password):
+def encrypt_password_function(master_password, username, specific_password):
     csv_read_list = read_csv_to_list(username)
     salt = csv_read_list[1][1].encode()
    
@@ -247,11 +264,28 @@ def add_service(master_password, username, name, specific_password):
     encoding_key = base64.urlsafe_b64encode(kdf.derive(master_password.encode()))
 
     encoded_password = Fernet(encoding_key).encrypt(specific_password.encode())
+    return encoded_password
+
+def add_service(master_password, username, name, specific_password):
+
+    encrypted_password = encrypt_password_function(master_password, username, specific_password)
     '***encoded_name = Fernet(encoding_key).encrypt(name.encode)****   -  UNSURE ABOUT NAME BEING ENCRYPTED JUST YET - HARD TO READ'
 
     with open('users/' + username + '.csv', 'a', newline='') as f:
         writer = csv.writer(f)
-        writer.writerow([name, encoded_password.decode()])
+        writer.writerow([name, encrypted_password.decode()])
+
+def check_service_exists(username, service_name):
+    read_csv_list = read_csv_to_list(username)
+    found_service = False   
+    for count, row in enumerate(read_csv_list, -1): 
+        if service_name in row or service_name == str(count) and service_name != '0' and service_name != '-1':
+            found_service_name = row[0]
+            found_service = True
+    if found_service == True:
+        return found_service_name
+    else:
+        return False
 
 def decrypt_service_password(service_name, username, master_password):
    
@@ -278,18 +312,19 @@ def decrypt_service_password(service_name, username, master_password):
 def update_service_password(master_password, username, service_name_to_update):
     csv_read_list = read_csv_to_list(username)
     new_service_password = password_generator()
+    new_encrypted_password = encrypt_password_function(master_password, username, new_service_password)
     with open('users/' + username + '.csv', 'w', newline='') as f:
         writer = csv.writer(f)
         updated_password_confirm = False
         for count, row in enumerate(csv_read_list, -1):
             if row[0] == service_name_to_update or service_name_to_update == str(count) and service_name_to_update != '0' and service_name_to_update != '-1':
                 selected_service_to_update = row[0]
-                writer.writerow([row[0], new_service_password])
+                writer.writerow([row[0], new_encrypted_password.decode()])
                 updated_password_confirm = True
             else:
                 writer.writerow([row[0], row[1]])
         if updated_password_confirm:
-            print(Fore.GREEN + "Password for {selected_service_to_update} has been successfully updated." + Fore.WHITE)
+            print(Fore.GREEN + f"Password for {selected_service_to_update} has been successfully updated." + Fore.WHITE)
         else:
             print(Fore.RED + "Password has not been updated - could not recognise selection" + Fore.WHITE)
 
