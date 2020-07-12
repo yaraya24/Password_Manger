@@ -140,6 +140,13 @@ def main():
                                             print(Fore.RED + f"Confirmation Failed - Nothing was updated", Fore.WHITE)
                                             continue
                                     elif edit_user_option == "delete" or edit_user_option == "delete entry" or edit_user_option == "2":
+                                        removal_confirmation = input(Fore.YELLOW + f"Confirm by entering 'yes' - The service and password will be removed forever\n" + Fore.RED + "WARNING: THIS CANNOT BE UNDONE \n" + Fore.WHITE + ":").lower()
+                                        if removal_confirmation == 'yes' or removal_confirmation == 'y':
+                                            delete_entries(user_name, service_name_to_update)
+                                            break
+                                        else:
+                                            print(Fore.RED + f"Confirmation Failed - Nothing was updated", Fore.WHITE)
+                                            continue
                                         "================================= WRITE HERE ======================="
                                     else:
                                         print(Fore.RED + f"Sorry didn't understand the selection: {edit_user_option}.", Fore.WHITE)
@@ -318,6 +325,25 @@ def decrypt_service_password(service_name, username, master_password):
         print(Fore.YELLOW + "The password is hidden - you must highlight it with your cursor", Fore.WHITE)
     else:
         print(Fore.RED + f"Invalid option - could not find that service", Fore.WHITE)
+
+def delete_entries(username, service_name_to_delete):
+    csv_read_list = read_csv_to_list(username)
+    with open('users/' + username + '.csv', 'w', newline='') as f:
+        writer = csv.writer(f)
+        deleted_service = False
+        for count, row in enumerate(csv_read_list, -1):
+            if row[0] == service_name_to_delete or service_name_to_delete == str(count) and service_name_to_delete != '0' and service_name_to_delete != '-1':
+                selected_service_to_delete = row[0]
+                deleted_service = True
+                continue
+            else:
+                writer.writerow([row[0], row[1]])
+        if deleted_service:
+            print(Fore.GREEN + f"Password for {selected_service_to_delete} has been successfully removed." + Fore.WHITE)
+        else:
+            print(Fore.RED + "No services have been removed - could not recognise selection" + Fore.WHITE)
+
+
 
 def update_service_password(master_password, username, service_name_to_update):
     csv_read_list = read_csv_to_list(username)
