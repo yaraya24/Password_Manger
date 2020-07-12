@@ -120,42 +120,53 @@ def main():
                                         print(Fore.RED + f"Sorry didn't understand the selection: {service_name_to_reveal}.", Fore.WHITE)
                                         continue
                                    
-                        elif user_instruction == 'update' or '3':
+                        elif user_instruction == 'update' or user_instruction == '3':
                             while True:
-                                display_vault(user_name, master_password)
-                                service_name_to_update = input(Fore.YELLOW + "\nEnter the name of the service to update the password - or enter 'back' to go back\n:" + Fore.WHITE).capitalize()
-                                if service_name_to_update == 'Back':
+                                if display_vault(user_name, master_password) == False:
+                                    print(Fore.RED + "You have an empty Vault - make some entries first", Fore.WHITE)
                                     break
-                                elif check_service_exists(user_name, service_name_to_update):
-                                    print(Fore.YELLOW + f"\n***Options for {check_service_exists(user_name, service_name_to_update)}***\n" + Fore.WHITE + "1. Update Password\n2. Delete Entry\n")
-                                    edit_user_option = input(":").lower()
-                                    if edit_user_option == 'back':
-                                        continue
-                                    elif edit_user_option == "update" or edit_user_option == "update password" or edit_user_option == "1":
-                                        confirmation_input = input(Fore.YELLOW + f"Confirm by entering 'yes' - A password will be auto-generated for you\n" + Fore.RED + "WARNING: THE CURRENT PASSWORD WILL BE REMOVED FOREVER \n" + Fore.WHITE + ":").lower()
-                                        if confirmation_input == 'yes' or confirmation_input == 'y':
-                                            update_service_password(master_password, user_name, service_name_to_update)
-                                            break
-                                        else:
-                                            print(Fore.RED + f"Confirmation Failed - Nothing was updated", Fore.WHITE)
-                                            continue
-                                    elif edit_user_option == "delete" or edit_user_option == "delete entry" or edit_user_option == "2":
-                                        removal_confirmation = input(Fore.YELLOW + f"Confirm by entering 'yes' - The service and password will be removed forever\n" + Fore.RED + "WARNING: THIS CANNOT BE UNDONE \n" + Fore.WHITE + ":").lower()
-                                        if removal_confirmation == 'yes' or removal_confirmation == 'y':
-                                            delete_entries(user_name, service_name_to_update)
-                                            break
-                                        else:
-                                            print(Fore.RED + f"Confirmation Failed - Nothing was updated", Fore.WHITE)
-                                            continue
-                                        "================================= WRITE HERE ======================="
-                                    else:
-                                        print(Fore.RED + f"Sorry didn't understand the selection: {edit_user_option}.", Fore.WHITE)
                                 else:
-                                    print(Fore.RED + f"Sorry didn't understand the selection: {service_name_to_update}.", Fore.WHITE)
-                                    continue
+                                    service_name_to_update = input(Fore.YELLOW + "\nEnter the name of the service to update the password - or enter 'back' to go back\n:" + Fore.WHITE).capitalize()
+                                    if service_name_to_update == 'Back':
+                                        break
+                                    elif check_service_exists(user_name, service_name_to_update):
+                                        print(Fore.YELLOW + f"\n***Options for {check_service_exists(user_name, service_name_to_update)}***\n" + Fore.WHITE + "1. Update Password\n2. Delete Entry\n")
+                                        edit_user_option = input(":").lower()
+                                        if edit_user_option == 'back':
+                                            continue
+                                        elif edit_user_option == "update" or edit_user_option == "update password" or edit_user_option == "1":
+                                            confirmation_input = input(Fore.YELLOW + f"Confirm by entering 'yes' - A password will be auto-generated for you\n" + Fore.RED + "WARNING: THE CURRENT PASSWORD WILL BE REMOVED FOREVER \n" + Fore.WHITE + ":").lower()
+                                            if confirmation_input == 'yes' or confirmation_input == 'y':
+                                                update_service_password(master_password, user_name, service_name_to_update)
+                                                break
+                                            else:
+                                                print(Fore.RED + f"Confirmation Failed - Nothing was updated", Fore.WHITE)
+                                                continue
+                                        elif edit_user_option == "delete" or edit_user_option == "delete entry" or edit_user_option == "2":
+                                            removal_confirmation = input(Fore.YELLOW + f"Confirm by entering 'yes' - The service and password will be removed forever\n" + Fore.RED + "WARNING: THIS CANNOT BE UNDONE \n" + Fore.WHITE + ":").lower()
+                                            if removal_confirmation == 'yes' or removal_confirmation == 'y':
+                                                delete_entries(user_name, service_name_to_update)
+                                                break
+                                            else:
+                                                print(Fore.RED + f"Confirmation Failed - Nothing was updated", Fore.WHITE)
+                                                continue
+                                            "================================= WRITE HERE ======================="
+                                        else:
+                                            print(Fore.RED + f"Sorry didn't understand the selection: {edit_user_option}.", Fore.WHITE)
+                                    else:
+                                        print(Fore.RED + f"Sorry didn't understand the selection: {service_name_to_update}.", Fore.WHITE)
+                                        continue
+                    
+                        elif user_instruction == 'logout' or user_instruction == '4':
+                            master_password = ''
+                            user_name = ''
+                            logout = True
+                            break
+                        else:
+                            print(Fore.RED + f"Do not understand the instruction {user_instruction}", Fore.WHITE)
+                            continue
 
-
-                    break #no idea what this break down
+                    break #brea
 
                 else:
                     print(Fore.RED + "\nUsername or Password is incorrect", Fore.WHITE)
