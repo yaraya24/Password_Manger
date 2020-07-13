@@ -5,7 +5,7 @@ from pathlib import Path
 import click, csv
 import hashlib
 
-from datetime import date
+from datetime import date, datetime
 
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
@@ -27,8 +27,6 @@ def main():
         3. Enter 'exit' if you wish to leave.
 
         """)
-
-        
 
         user_instruction = input(':').lower()
                 
@@ -70,6 +68,20 @@ def main():
         
         elif user_instruction == 'login' or user_instruction == '2':
             while True:
+                lockout_list = read_csv_to_list('check')
+                if lockout_list[0][1] == 'locked':
+                    time_now = datetime.now()
+                    date = lockout_list[0][2].split()[0]
+                    time = lockout_list[0][2].split()[1]
+                    year, month, day = map(int, date.split('-'))
+                    hour, minute, second = map(int, time.split(':'))
+                    check_time = datetime(year, month, day, hour, minute, second)
+                    difference_lockout_time = time_now - check_time
+                    if difference_lockout_time.seconds < 300:
+                        print(Fore.RED + "You have been locked out for 5 minutes" + Fore.WHITE)
+                        break
+                            
+                   
                 print(Fore.YELLOW + "Enter 'back' to return to the previous page.", Fore.WHITE)
                 user_name = click.prompt("Username ")
                 if user_name.lower() == 'back':
@@ -78,7 +90,9 @@ def main():
                 authenticated = verify_master_password(master_password, user_name)
               
                 if authenticated:
+                    lockout_timer(0)
                     print(Fore.GREEN + "\n Successfully Logged In", Fore.WHITE)
+                    login_attempt_count = 0 
                     while True:
                         check_expiry_password(user_name)
                         print("""
@@ -173,12 +187,26 @@ def main():
 
                 else:
                     print(Fore.RED + "\nUsername or Password is incorrect", Fore.WHITE)
+                    login_list = read_csv_to_list('check')
+                    login_attempt_count = int(login_list[0][0]) + 1
+                    lockout_timer(login_attempt_count)                                
                     continue
+
         elif user_instruction == 'exit' or user_instruction == '3':
            sys.exit()
         else:
             print(Fore.RED + f"Don't understand the instruction: {user_instruction}")
             continue
+
+def lockout_timer(counter):
+    with open('users/check.csv', 'w', newline='') as f:
+        writer = csv.writer(f)
+        if counter < 3:
+            writer.writerow([counter, 'not_locked'])
+        else:
+            writer.writerow([counter, 'locked',  datetime.now().strftime("%Y-%m-%d %H:%M:%S")] )
+
+
 
 def read_csv_to_list(username):
     csv_list = []
