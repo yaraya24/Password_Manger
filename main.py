@@ -92,7 +92,7 @@ def main():
                         """)
                         user_instruction = input(":").lower()
                         if user_instruction == "add" or user_instruction == '1':
-                            service_name = input("Please enter the name of the service you wish to add to your vault - or enter 'back' to go back \n:").capitalize()
+                            service_name = input(Fore.YELLOW + "Please enter the name of the service you wish to add to your vault - or enter 'back' to go back \n:" + Fore.WHITE).capitalize()
                             if service_name == 'Back':
                                 continue
                             elif check_for_duplicate_service(user_name, service_name):
@@ -370,7 +370,7 @@ def update_service_password(master_password, username, service_name_to_update):
         for count, row in enumerate(csv_read_list, -1):
             if row[0] == service_name_to_update or service_name_to_update == str(count) and service_name_to_update != '0' and service_name_to_update != '-1':
                 selected_service_to_update = row[0]
-                writer.writerow([row[0], new_encrypted_password.decode()])
+                writer.writerow([row[0], new_encrypted_password.decode(), date.today()])
                 updated_password_confirm = True
             else:
                 writer.writerow([row[0], row[1]])

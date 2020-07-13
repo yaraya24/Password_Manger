@@ -37,7 +37,24 @@ def add_service(master_password, username, name, specific_password):
         writer = csv.writer(f)
         writer.writerow([name, encoded_password.decode()])
 
-            
+
+
+def update_service_password(master_password, username, service_name_to_update, new_service_password):
+    csv_read_list = read_csv_to_list(username)
+    with open('users/' + username + '.csv', 'w', newline='') as f:
+        writer = csv.writer(f)
+        updated_password_confirm = False
+        for count, row in enumerate(csv_read_list, -1):
+            if row[0] == service_name_to_update or service_name_to_update == str(count) and service_name_to_update != '0' and service_name_to_update != '-1':
+                selected_service_to_update = row[0]
+                writer.writerow([row[0], new_service_password])
+                updated_password_confirm = True
+            else:
+                writer.writerow([row[0], row[1]])
+        if updated_password_confirm:
+            print("UPDATED PASSWORD")
+        else:
+            print("YIKES -----")
 
 
 def decrypt_service_password(name='', master_password=''):
@@ -67,9 +84,9 @@ def decrypt_service_password(name='', master_password=''):
         print(f"Could not find an entry with the name {name}")
 
 
-
+update_service_password('Table123$$', 'snoop', 'Facebook', 'facebook password')
 # make_deposit()
-decrypt_service_password()
-# password_generator()
+# decrypt_service_password()
+
 
 
