@@ -351,6 +351,8 @@ def delete_entries(username, service_name_to_delete):
                 selected_service_to_delete = row[0]
                 deleted_service = True
                 continue
+            elif count > 0:
+                writer.writerow([row[0], row[1], row[2]])
             else:
                 writer.writerow([row[0], row[1]])
         if deleted_service:
@@ -372,6 +374,8 @@ def update_service_password(master_password, username, service_name_to_update):
                 selected_service_to_update = row[0]
                 writer.writerow([row[0], new_encrypted_password.decode(), date.today()])
                 updated_password_confirm = True
+            elif count > 0:
+                writer.writerow([row[0], row[1], row[2]])
             else:
                 writer.writerow([row[0], row[1]])
         if updated_password_confirm:
