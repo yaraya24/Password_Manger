@@ -5,6 +5,8 @@ from pathlib import Path
 import click, csv
 import hashlib
 
+from datetime import date
+
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
@@ -78,6 +80,7 @@ def main():
                 if authenticated:
                     print(Fore.GREEN + "\n Successfully Logged In", Fore.WHITE)
                     while True:
+                        check_expiry_password(user_name)
                         print("""
                         Welcome to your security Vault.....
 
@@ -284,6 +287,7 @@ def password_generator():
          password += random.choice(total_possible_selection)
     return password
 
+
 def encrypt_password_function(master_password, username, specific_password):
     csv_read_list = read_csv_to_list(username)
     salt = csv_read_list[1][1].encode()
@@ -301,7 +305,7 @@ def add_service(master_password, username, name, specific_password):
 
     with open('users/' + username + '.csv', 'a', newline='') as f:
         writer = csv.writer(f)
-        writer.writerow([name, encrypted_password.decode()])
+        writer.writerow([name, encrypted_password.decode(), date.today()])
 
 def check_service_exists(username, service_name):
     read_csv_list = read_csv_to_list(username)
@@ -375,6 +379,16 @@ def update_service_password(master_password, username, service_name_to_update):
         else:
             print(Fore.RED + "Password has not been updated - could not recognise selection" + Fore.WHITE)
 
+def check_expiry_password(username):
+    csv_vault = read_csv_to_list(username)
+    check_date = date.today()
+    if len(csv_vault) > 2:
+        for row in csv_vault[2:]:
+            year, month, day = map(int, row[2].split('-'))
+            original_date = date(year, month, day)
+            difference = check_date - original_date
+            if difference.days >= 30:
+                print(Fore.RED + f"The password for {row[0]} needs to be updated - it has been {difference.days} days since you last updated!", Fore.WHITE)
 
 if __name__ == '__main__':
     main()
