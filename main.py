@@ -1,6 +1,6 @@
 from colorama import Fore, Back, Style
 from cryptography.fernet import Fernet
-import bcrypt, base64, re, string, random, os, sys
+import base64, re, string, random, os, sys
 from pathlib import Path
 import click, csv
 import hashlib
@@ -11,22 +11,27 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
-def main():    
+def main():   
+   
+ 
     while True:
         print(Style.RESET_ALL) 
         print(Fore.LIGHTCYAN_EX + '**** PASSWORD MANAGER X ****'.center(100), Fore.WHITE)
         print("""
 
-        Follow the instructions and you will have your very own secure vault to store all your passwords, sensitive data and even your deepest and darkest secrets.
+        Welcome to Password Manager X. With an ever increasing emphasis on security on the world wide web, 
+        Password Manager X will allow you to store all your passwordws in a safe place. 
 
-        With hashing, ecndoding and other cryptography, rest assured your information will be kept secret 
+        Utilising the most effective cryptography technology - rest assured your passwords will ketp safe.
 
-        """ + Fore.YELLOW + "*** Instructions ****" + Fore.WHITE + """
-        1. Enter 'create' if you want to sign up for a new swiss vault
-        2. Enter 'login' if you have an account and wish to login
-        3. Enter 'exit' if you wish to leave.
 
-        """)
+
+        """ + Fore.YELLOW  + """
+        1. Enter 'CREATE' if you want to sign up for a Password Manager X account
+        2. Enter 'LOGIN' if you have an account and wish to login
+        3. Enter 'EXIT' if you wish to leave.
+
+        """ + Fore.WHITE)
 
         user_instruction = input(':').lower()
                 
@@ -46,7 +51,7 @@ def main():
 
                         You are now going to enter your master password. This password is unrecoverable!
 
-                        To keep your vault safe, the amster password you choose has to be complex.
+                        To keep your vault safe, the master password you choose has to be sufficiently complex.
 
                         * Password must contain at least one uppercase and lowercase letter.
                         * Password must contain at least one number.
@@ -77,7 +82,7 @@ def main():
                     hour, minute, second = map(int, time.split(':'))
                     check_time = datetime(year, month, day, hour, minute, second)
                     difference_lockout_time = time_now - check_time
-                    if difference_lockout_time.seconds < 300:
+                    if difference_lockout_time.seconds < 20:
                         print(Fore.RED + "You have been locked out for 5 minutes" + Fore.WHITE)
                         break
                             
@@ -95,20 +100,30 @@ def main():
                     login_attempt_count = 0 
                     while True:
                         check_expiry_password(user_name)
-                        print("""
-                        Welcome to your security Vault.....
+                        print('\n')
+                        print(Fore.LIGHTCYAN_EX + '**** PASSWORD MANAGER X ****'.center(100) + Fore.WHITE + f"""
 
-                        1. Add
-                        2. Display
-                        3. Edit
-                        4. Logout
+                        Welcome to your Passowrd Manager X account {user_name}
 
-                        """)
+                        Please enter the one of the below options by entering the option's name or corresponding number.
+
+                        From this page, you can add a service with an auto-generated password, display all your passwords and update or remove your choice of passwords.
+
+                        """ + Fore.YELLOW + f"""
+                        1. Enter 'ADD' to add a service to the password manager
+                        2. Enter 'DISPLAY' to reveal the password for a specific service
+                        3. Enter 'EDIT' to update your password or remove a service
+                        4. Enter 'LOGOUT' to leave your account 
+
+                        """ + Fore.WHITE)
                         user_instruction = input(":").lower()
                         if user_instruction == "add" or user_instruction == '1':
                             service_name = input(Fore.YELLOW + "Please enter the name of the service you wish to add to your vault - or enter 'back' to go back \n:" + Fore.WHITE).capitalize()
                             if service_name == 'Back':
                                 continue
+                            if len(service_name) < 1:
+                                print(Fore.RED + "Please ensure you provide a name to the service you want to add" + Fore.WHITE) 
+                                contin
                             elif check_for_duplicate_service(user_name, service_name):
                                 confirmation = input(Fore.YELLOW + f"Enter 'yes' if you wish to add {service_name} to your vault - A password will be auto-generated for you\n:" + Fore.WHITE).lower()
                                 if confirmation == 'yes' or confirmation == 'y':
