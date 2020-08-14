@@ -1,3 +1,5 @@
+#!/usr/sbin/python
+
 from colorama import Fore, Back, Style
 from cryptography.fernet import Fernet
 import base64, re, string, random, os, sys
